@@ -13,6 +13,16 @@
 #include <string.h>
 #include <stdio.h>
 
+bool isMsgBuffEmpty(char* msg_buff)
+{
+    bool verdict = false;
+    if (strlen(msg_buff) == 0) 
+    {
+        verdict = true;
+    }
+    return verdict; 
+}
+
 int getWordCount(char* msg) 
 {
     // Get total amount of white space. (includes dups)
@@ -21,8 +31,12 @@ int getWordCount(char* msg)
     int number_of_dups = getNumOfDupSpace(msg);
     // Subtracts the total amount of ws from duplicate white space (net white space). 
     result -= number_of_dups;
-    // The number of words is the net amount of white space (counting consequtive ws as one) + 1. 
-    return (result + 1);
+    // The number of words is the net amount of white space (counting consequtive ws as one) + 1.
+    // Assuming there is at least one word in the file. 
+    if (!isMsgBuffEmpty(msg)) {
+        result += 1;
+    }
+    return result;
 }
 
 int getNumOfDupSpace(char* msg) 
@@ -85,4 +99,4 @@ int isThereConsecWS(char* msg, int index)
         verdict = 1;
     }
     return verdict;    
-}
+}  

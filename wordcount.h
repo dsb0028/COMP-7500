@@ -62,6 +62,8 @@ int is_trail_ws(char* msg);
  */
 int isThereConsecWS(char* msg, int index);
 
+bool isMsgBuffEmpty(char* msg_buff);
+
 #endif
 
 

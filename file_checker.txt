@@ -1,1 +1,14 @@
 
+input_output.txt
+shortstory_output.txt
+shortstory_output.txt
+shortstory_output.txt
+shortstory_output.txt
+shortstory_output.txt
+shortstory_output.txt
+shortstory_output.txt
+shortstory_output.txt
+input2_output.txt
+empty_file_output.txt
+empty_file_output.txt
+empty_file_output.txt

@@ -62,6 +62,8 @@ char* msg11 = "This is the second project of COMP7500 class.\n";
 char* msg12 = "This is the second project of COMP7500 class.\n\n";
 char* msg13 = "This is the 2 project of COMP7500 class.\n\n";
 char* msg14 = "/ / / 11 && 88 () 00 15";
+char* msg15 = "";
+char* msg16 = "1";
 
 void test_getWordCount(void) 
 {
@@ -95,6 +97,10 @@ void test_getWordCount(void)
    CU_ASSERT(getWordCount(msg13) == 8);
    /* Case 15: Mix of numbers and special characters. */
    CU_ASSERT(getWordCount(msg14) == 9);
+   /* Case 16: Message is completely empty */
+   CU_ASSERT(getWordCount(msg15) == 0);
+   /* Case 17: Message has only one word. */
+   CU_ASSERT(getWordCount(msg16) == 1);
 }
 
 void test_getNumOfSpace(void) 
@@ -128,7 +134,8 @@ void test_getNumOfSpace(void)
    /* Case 14: Two consecutive '\n' of trailing white space and a number is included in the message. */
    CU_ASSERT(getNumOfSpace(msg13) == 9);
    /* Case 15: Mix of numbers and special characters. */
-   CU_ASSERT(getNumOfSpace(msg14) == 8);     
+   CU_ASSERT(getNumOfSpace(msg14) == 8);
+   /* Case 16: Message is completely empty */     
 }
 
 void test_getNumOfDupSpace(void) 
@@ -163,6 +170,7 @@ void test_getNumOfDupSpace(void)
    CU_ASSERT(getNumOfDupSpace(msg13) == 2);
    /* Case 15: Mix of numbers and special characters. */
    CU_ASSERT(getNumOfDupSpace(msg14) == 0);
+   /* Case 16: Message is completely empty */
 }
 
 void test_is_prec_ws(void) {
