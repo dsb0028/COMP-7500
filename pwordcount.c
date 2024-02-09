@@ -200,6 +200,14 @@ void checkNumOfArgs(int argc, char *argv[])
    }
 }
 
+/**
+ * @brief This method takes an the name of an input file (without ext) and 
+ *        maps it to the name of an output file. 
+ *        i.e input.txt gets an output file name of input_output.txt
+ * 
+ * @param input_file the name of the input file
+ * @param output_file the name of the associated output file
+ */
 void mapInputFileNameToOutput(char* input_file, char* output_file)
 {
    char *ext = get_filename_ext(input_file);
