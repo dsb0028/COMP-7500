@@ -27,11 +27,13 @@ char read_msg[BUFFER_SIZE];
  * @param write_msg message being sent
  * @param size size of the message being sent
  */
-void send(int fd[2], void* write_msg, size_t size); 
+void send(int fd[2], void* write_msg, size_t size);
+
+bool isProcessForked(pid_t pid);
 
 /**
  * @brief Retrieves message from read end of the pipe.
- * 
+ *
  * @param fd the pipe involved
  * @param read_msg the message being read from the buffer
  * @param size the size of the message being read

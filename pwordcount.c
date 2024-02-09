@@ -34,7 +34,6 @@
  */
 int main(int argc, char *argv[])
 {
-   int file_no = 0;
    char output_file[23];
    char file_buff[23];
    char* file_checker = "file_checker.txt";
@@ -54,23 +53,22 @@ int main(int argc, char *argv[])
    checkNumOfArgs(argc,argv);
    /* Sets the name of the file to be the second argument being parsed from the command line. */
    file_name = argv[1];
-   
+   /* we are assuming that the file is invalid unless proven otherwise */
+   bool isFileValid = false;
    /* Create the pipes */
    createPipes(fd1,fd2);
    /* now fork a child process */
    pid = fork();
-   if (pid < 0) 
-   {
-      fprintf(stderr, "Fork failed");
+   bool verdict = isProcessForked(pid);
+   if (verdict == false)
       return EXIT_FAILURE;
-   }
    if (pid > 0) 
    {  /* parent process */
       /* close the unused ends of the pipes */
       closePipeEnds(fd1[READ_END],fd2[WRITE_END]);
       fp=fopen(file_name,"r"); //opening file
       /* Ensures that the file to be loaded is valid */
-      bool isFileValid = check_file(fp,file_name);
+      isFileValid = check_file(fp,file_name);
       /* Function that loads the file in the write message buffer */
       if (isFileValid == true) {  
          mapInputFileNameToOutput(file_name, output_file);
@@ -106,6 +104,7 @@ int main(int argc, char *argv[])
    {  /* child process */
       /* close the unused ends of the pipes */
       closePipeEnds(fd1[WRITE_END],fd2[READ_END]);
+      //printf("%d",isFileValid);
       mapInputFileNameToOutput(file_name,output_file);
       fp1 = fopen(output_file,"a");
       /* Process 2 is recieving data being sent from Process 1 */
@@ -124,7 +123,16 @@ int main(int argc, char *argv[])
    return EXIT_SUCCESS;
 }
 
-
+bool isProcessForked(pid_t pid)
+{
+   bool verdict = true;
+   if (pid < 0)
+   {
+      fprintf(stderr, "Fork failed");
+      verdict = false;
+   }
+   return verdict;
+}
 
 /**
  * @brief Writes message to the write end of the pipe.
