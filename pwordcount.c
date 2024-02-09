@@ -35,11 +35,7 @@
 int main(int argc, char *argv[])
 {
    char output_file[23];
-   char file_buff[23];
-   char* file_checker = "file_checker.txt";
    FILE *fp1; //serves as a pointer to <filename>_output.txt
-   FILE *fp2; //serves as a pointer to file_checker.txt
-   fp2 = fopen(file_checker,"r+");
    /* The process identifier */
    pid_t pid;
    /* Stores the word count */
@@ -53,74 +49,100 @@ int main(int argc, char *argv[])
    checkNumOfArgs(argc,argv);
    /* Sets the name of the file to be the second argument being parsed from the command line. */
    file_name = argv[1];
-   /* we are assuming that the file is invalid unless proven otherwise */
-   bool isFileValid = false;
    /* Create the pipes */
    createPipes(fd1,fd2);
    /* now fork a child process */
    pid = fork();
+   //printf("%d\n",pid);
    bool verdict = isProcessForked(pid);
    if (verdict == false)
       return EXIT_FAILURE;
    if (pid > 0) 
    {  /* parent process */
-      /* close the unused ends of the pipes */
-      closePipeEnds(fd1[READ_END],fd2[WRITE_END]);
-      fp=fopen(file_name,"r"); //opening file
-      /* Ensures that the file to be loaded is valid */
-      isFileValid = check_file(fp,file_name);
-      /* Function that loads the file in the write message buffer */
-      if (isFileValid == true) {  
-         mapInputFileNameToOutput(file_name, output_file);
-         fp1 = fopen(output_file,"w+"); //open output_file
-         /* Ensures that the name of the new output file is written at the end of file_checker.txt */
-         fseek(fp2,-12,SEEK_END);  
-         fread(file_buff, sizeof(file_buff),1, fp2);
-         /* Writes the name of the output file to file_checker.txt */
-         fprintf(fp2,"%s\n",output_file);
-         fclose(fp2); //closes file_checker.txt
-         fprintf(fp1,"Process 1 is reading file “%s” now ... \n",file_name);   
-         printf("Process 1 is reading file “%s” now ... \n",file_name);
-         load_file(fp,file_name,write_msg);
-      }
-      else {
-         return EXIT_FAILURE;
-      }
-      fclose(fp); // closing input file
-      fprintf(fp1,"Process 1 starts sending data to Process 2 ...\n");
-      fclose(fp1); 
-      printf("Process 1 starts sending data to Process 2 ...\n");
-      send(fd1,write_msg,strlen(write_msg)+1);
-      /* Process 1 receives the result from Process 2 */
-      recieve(fd2,&result,sizeof(result));
-      mapInputFileNameToOutput(file_name,output_file);
-      fp1 = fopen(output_file,"a");
-      /* Result is printed out */
-      fprintf(fp1,"%s %d%s","Process 1: The total number of words is" ,result,".");
-      fclose(fp1);
-      printf("Process 1: The total number of words is %d.\n",result);
+      invokeParentProcess(fd1, fd2, output_file);
    }
    else 
    {  /* child process */
-      /* close the unused ends of the pipes */
-      closePipeEnds(fd1[WRITE_END],fd2[READ_END]);
-      //printf("%d",isFileValid);
-      mapInputFileNameToOutput(file_name,output_file);
-      fp1 = fopen(output_file,"a");
-      /* Process 2 is recieving data being sent from Process 1 */
-      recieve(fd1, read_msg, BUFFER_SIZE);
-      fprintf(fp1,"Process 2 finishes receiving data from Process 1 ...\n");
-      printf("Process 2 finishes receiving data from Process 1 ...\n");
-      /* performing word count here */
-      fprintf(fp1,"Process 2 is counting words now ...\n");
-      printf("Process 2 is counting words now ...\n");
-	   result = getWordCount(read_msg);   
-	   fprintf(fp1,"Process 2 is sending the result back to Process 1 ...\n");
-      printf("Process 2 is sending the result back to Process 1 ...\n");
-	   send(fd2,&result,sizeof(result));
-      fclose(fp1);
+      invokeChild(fd1, fd2, output_file);
    }
    return EXIT_SUCCESS;
+}
+
+void invokeParentProcess(int fd1[2], int fd2[2], char output_file[23])
+{
+   int result = 0;
+   /* close the unused ends of the pipes */
+   closePipeEnds(fd1[READ_END], fd2[WRITE_END]);
+   processFile(output_file);
+   FILE *fp1 = fopen(output_file, "a"); // open output_file
+   fprintf(fp1, "Process 1 starts sending data to Process 2 ...\n");
+   fclose(fp1);
+   printf("Process 1 starts sending data to Process 2 ...\n");
+   send(fd1, write_msg, strlen(write_msg) + 1);
+   /* Process 1 receives the result from Process 2 */
+   recieve(fd2, &result, sizeof(result));
+   mapInputFileNameToOutput(file_name, output_file);
+   fp1 = fopen(output_file, "a");
+   /* Result is printed out */
+   fprintf(fp1, "%s %d%s", "Process 1: The total number of words is", result, ".");
+   fclose(fp1);
+   printf("Process 1: The total number of words is %d.\n", result);
+}
+
+void processFile(char output_file[23])
+{
+   fp = fopen(file_name, "r"); // opening file
+   /* Ensures that the file to be loaded is valid */
+   bool isFileValid = check_file(fp, file_name);
+   /* Function that loads the file in the write message buffer */
+   if (isFileValid == true)
+   {
+      mapInputFileNameToOutput(file_name, output_file);
+      FILE *fp1 = fopen(output_file, "w+"); // open output_file
+      char *file_checker = "file_checker.txt";
+      logOutputFile(file_checker, output_file);
+      fprintf(fp1, "Process 1 is reading file “%s” now ... \n", file_name);
+      fclose(fp1);
+      printf("Process 1 is reading file “%s” now ... \n", file_name);
+      load_file(fp, file_name, write_msg);
+   }
+   else
+   {
+      exit(EXIT_FAILURE);
+   }
+   fclose(fp); // closing input file
+}
+
+void logOutputFile(char *file_checker, char output_file[23])
+{
+   FILE *fp2 = fopen(file_checker, "r+");
+   char file_buff[23];
+   /* Ensures that the name of the new output file is written at the end of file_checker.txt */
+   fseek(fp2, -12, SEEK_END);
+   fread(file_buff, sizeof(file_buff), 1, fp2);
+   /* Writes the name of the output file to file_checker.txt */
+   fprintf(fp2, "%s\n", output_file);
+   fclose(fp2); // closes file_checker.txt
+}
+
+void invokeChild(int fd1[2], int fd2[2], char output_file[23])
+{
+   /* close the unused ends of the pipes */
+   closePipeEnds(fd1[WRITE_END], fd2[READ_END]);
+   mapInputFileNameToOutput(file_name, output_file);
+   FILE *fp1 = fopen(output_file, "a"); // reopen output file
+   /* Process 2 is recieving data being sent from Process 1 */
+   recieve(fd1, read_msg, BUFFER_SIZE);
+   fprintf(fp1, "Process 2 finishes receiving data from Process 1 ...\n");
+   printf("Process 2 finishes receiving data from Process 1 ...\n");
+   /* performing word count here */
+   fprintf(fp1, "Process 2 is counting words now ...\n");
+   printf("Process 2 is counting words now ...\n");
+   int result = getWordCount(read_msg);
+   fprintf(fp1, "Process 2 is sending the result back to Process 1 ...\n");
+   printf("Process 2 is sending the result back to Process 1 ...\n");
+   send(fd2, &result, sizeof(result));
+   fclose(fp1); // close output file
 }
 
 bool isProcessForked(pid_t pid)

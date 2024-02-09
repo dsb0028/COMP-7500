@@ -31,6 +31,14 @@ void send(int fd[2], void* write_msg, size_t size);
 
 bool isProcessForked(pid_t pid);
 
+void invokeChild(int fd1[2], int fd2[2], char output_file[23]);
+
+void invokeParentProcess(int fd1[2], int fd2[2], char output_file[23]);
+
+void processFile(char  output_file[23]);
+
+void logOutputFile(char *file_checker, char output_file[23]);
+
 /**
  * @brief Retrieves message from read end of the pipe.
  *
@@ -64,6 +72,5 @@ void closePipeEnds(int end1, int end2);
  */
 void checkNumOfArgs(int argc, char *argv[]);
 
-//void mapInputFileNameToOutput(char* file_name_without_ext, int position, char output_file[23]);
 void mapInputFileNameToOutput(char* input_file, char* output_file);
 #endif
